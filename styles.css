@@ -288,3 +288,82 @@ img { max-width:100%; display:block; }
     line-height:1.4!important;
   }
 }
+
+
+/* BUSINESS V1.0.3 ALL PAGE JAPANESE WRAP QA */
+.business-site h1,
+.business-site h2,
+.business-site h3{
+  line-break:strict;
+  word-break:normal;
+  overflow-wrap:normal;
+}
+
+.business-site .biz-jp-lock-line{
+  display:block;
+  white-space:nowrap;
+}
+
+.business-site .biz-editorial-copy .biz-jp-editorial-safe{
+  font-size:clamp(1.85rem,2.45vw,2.2rem)!important;
+  line-height:1.48!important;
+  letter-spacing:-.025em!important;
+}
+
+.business-site .biz-live-panel .biz-jp-hotel-safe{
+  font-size:clamp(1.75rem,2.2vw,2rem)!important;
+  line-height:1.48!important;
+}
+
+.business-site .biz-system-reveal .biz-jp-system-safe{
+  font-size:clamp(2.2rem,3.7vw,3.75rem)!important;
+  line-height:1.28!important;
+  letter-spacing:-.035em!important;
+}
+
+.business-site .biz-page-hero h1{
+  font-size:clamp(2.8rem,5vw,5.4rem)!important;
+  line-height:1.14!important;
+  letter-spacing:-.035em!important;
+}
+
+.business-site .biz-prose h2{
+  line-height:1.45!important;
+}
+
+.booking-page h1,
+.booking-page h2,
+.booking-page h3,
+body:not(.business-site) .section-title{
+  line-break:strict;
+  word-break:normal;
+  overflow-wrap:break-word;
+}
+
+@media(max-width:980px){
+  .business-site .biz-jp-lock-line{
+    white-space:normal;
+  }
+  .business-site .biz-editorial-copy .biz-jp-editorial-safe{
+    font-size:clamp(1.85rem,4.2vw,2.25rem)!important;
+  }
+  .business-site .biz-system-reveal .biz-jp-system-safe{
+    font-size:clamp(2.2rem,5.3vw,3.2rem)!important;
+  }
+}
+
+@media(max-width:680px){
+  .business-site .biz-page-hero h1{
+    font-size:clamp(2.35rem,11vw,3.35rem)!important;
+    line-height:1.2!important;
+  }
+  .business-site .biz-editorial-copy .biz-jp-editorial-safe,
+  .business-site .biz-live-panel .biz-jp-hotel-safe{
+    font-size:1.8rem!important;
+    line-height:1.5!important;
+  }
+  .business-site .biz-system-reveal .biz-jp-system-safe{
+    font-size:2.25rem!important;
+    line-height:1.35!important;
+  }
+}
