@@ -213,3 +213,10 @@ img { max-width:100%; display:block; }
 .compare-sales-callout strong{font-family:'Noto Serif JP',serif;font-size:1.08rem;line-height:1.7;max-width:560px}.compare-sales-callout span{color:#756b61;line-height:1.8;max-width:360px}
 .compare-final-cta{margin-top:54px;padding:52px;background:#25342d;color:#fff;text-align:center}.compare-final-cta h2{font-size:clamp(2rem,4vw,4rem);margin:14px 0}.compare-final-cta p{max-width:760px;margin:0 auto 28px;color:rgba(255,255,255,.7);line-height:1.9}.compare-final-cta>div{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
 @media(max-width:760px){.compare-sales-callout{display:block}.compare-sales-callout span{display:block;margin-top:12px}.compare-final-cta{padding:34px 20px}}
+
+
+/* BUSINESS V1.0.1 VISUAL POLISH */
+.biz-gallery figure{position:relative;overflow:hidden}
+.biz-gallery figcaption{position:absolute;left:14px;right:14px;bottom:12px;padding:8px 10px;border:1px solid rgba(255,255,255,.28);border-radius:999px;background:rgba(20,18,16,.54);backdrop-filter:blur(8px);color:#fff;font-size:10px;font-weight:800;letter-spacing:.12em;text-align:center}
+.biz-gallery img{filter:saturate(.82) contrast(1.03)}
+.biz-staff img{filter:saturate(.82) contrast(1.025)}
