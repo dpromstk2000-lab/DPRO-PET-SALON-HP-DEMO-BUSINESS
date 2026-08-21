@@ -1,0 +1,249 @@
+name: PET SALON BUSINESS V1.0.3 ALL PAGE JAPANESE WRAP QA
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/pet-salon-business-v103-all-page-japanese-wrap-qa.yml'
+
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  qa_fix:
+    if: "!contains(github.event.head_commit.message, '[BUSINESS-V1.0.3-WRAP-QA]')"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply all-page Japanese wrap policy
+        shell: python
+        run: |
+          from pathlib import Path
+
+          # HOME: lock editorial and system headings at meaningful phrase boundaries.
+          p = Path("index.html")
+          s = p.read_text(encoding="utf-8")
+
+          s = s.replace(
+              '<h3>同じ犬種でも、<br>同じケアはありません。</h3>',
+              '<h3 class="biz-jp-editorial-safe"><span class="biz-jp-lock-line">同じ犬種でも、</span><span class="biz-jp-lock-line">同じケアはありません。</span></h3>'
+          )
+
+          s = s.replace(
+              '<h2>美しいHPの裏側まで、DPRO。</h2>',
+              '<h2 class="biz-jp-system-safe"><span class="biz-jp-lock-line">美しいHPの裏側まで、</span><span class="biz-jp-lock-line">DPRO。</span></h2>'
+          )
+
+          s = s.replace(
+              '<h3>ホテルの空きも、<br>店舗設定とリアルタイム連動。</h3>',
+              '<h3 class="biz-jp-hotel-safe"><span class="biz-jp-lock-line">ホテルの空きも、</span><span class="biz-jp-lock-line">店舗設定とリアルタイム連動。</span></h3>'
+          )
+
+          p.write_text(s, encoding="utf-8")
+
+          # CONCEPT: same editorial pattern, locked at phrase boundaries.
+          p = Path("concept.html")
+          s = p.read_text(encoding="utf-8")
+          s = s.replace(
+              '<h3>記録することは、<br>もっと理解すること。</h3>',
+              '<h3 class="biz-jp-editorial-safe"><span class="biz-jp-lock-line">記録することは、</span><span class="biz-jp-lock-line">もっと理解すること。</span></h3>'
+          )
+          p.write_text(s, encoding="utf-8")
+
+          # Global BUSINESS Japanese typography safety + cache bust.
+          css_path = Path("styles.css")
+          css = css_path.read_text(encoding="utf-8")
+          marker = "/* BUSINESS V1.0.3 ALL PAGE JAPANESE WRAP QA */"
+
+          if marker not in css:
+              css += r'''
+
+          /* BUSINESS V1.0.3 ALL PAGE JAPANESE WRAP QA */
+          .business-site h1,
+          .business-site h2,
+          .business-site h3{
+            line-break:strict;
+            word-break:normal;
+            overflow-wrap:normal;
+          }
+
+          .business-site .biz-jp-lock-line{
+            display:block;
+            white-space:nowrap;
+          }
+
+          .business-site .biz-editorial-copy .biz-jp-editorial-safe{
+            font-size:clamp(1.85rem,2.45vw,2.2rem)!important;
+            line-height:1.48!important;
+            letter-spacing:-.025em!important;
+          }
+
+          .business-site .biz-live-panel .biz-jp-hotel-safe{
+            font-size:clamp(1.75rem,2.2vw,2rem)!important;
+            line-height:1.48!important;
+          }
+
+          .business-site .biz-system-reveal .biz-jp-system-safe{
+            font-size:clamp(2.2rem,3.7vw,3.75rem)!important;
+            line-height:1.28!important;
+            letter-spacing:-.035em!important;
+          }
+
+          .business-site .biz-page-hero h1{
+            font-size:clamp(2.8rem,5vw,5.4rem)!important;
+            line-height:1.14!important;
+            letter-spacing:-.035em!important;
+          }
+
+          .business-site .biz-prose h2{
+            line-height:1.45!important;
+          }
+
+          .booking-page h1,
+          .booking-page h2,
+          .booking-page h3,
+          body:not(.business-site) .section-title{
+            line-break:strict;
+            word-break:normal;
+            overflow-wrap:break-word;
+          }
+
+          @media(max-width:980px){
+            .business-site .biz-jp-lock-line{
+              white-space:normal;
+            }
+            .business-site .biz-editorial-copy .biz-jp-editorial-safe{
+              font-size:clamp(1.85rem,4.2vw,2.25rem)!important;
+            }
+            .business-site .biz-system-reveal .biz-jp-system-safe{
+              font-size:clamp(2.2rem,5.3vw,3.2rem)!important;
+            }
+          }
+
+          @media(max-width:680px){
+            .business-site .biz-page-hero h1{
+              font-size:clamp(2.35rem,11vw,3.35rem)!important;
+              line-height:1.2!important;
+            }
+            .business-site .biz-editorial-copy .biz-jp-editorial-safe,
+            .business-site .biz-live-panel .biz-jp-hotel-safe{
+              font-size:1.8rem!important;
+              line-height:1.5!important;
+            }
+            .business-site .biz-system-reveal .biz-jp-system-safe{
+              font-size:2.25rem!important;
+              line-height:1.35!important;
+            }
+          }
+          '''
+
+          css_path.write_text(css, encoding="utf-8")
+
+          # Every HTML page now points at the same current CSS version.
+          # This prevents old v=1000 / v=1011 / v=1012 cache from surviving.
+          for html in Path(".").glob("*.html"):
+              text = html.read_text(encoding="utf-8")
+              import re
+              text = re.sub(r'styles\.css\?v=[0-9]+', 'styles.css?v=1013', text)
+              html.write_text(text, encoding="utf-8")
+
+      - name: Audit all HTML pages
+        shell: python
+        run: |
+          from pathlib import Path
+          import re, sys
+
+          htmls = sorted(Path(".").glob("*.html"))
+          expected = {
+              "access.html","compare.html","concept.html","faq.html","first.html",
+              "gallery.html","hotel.html","index.html","menu.html","mypage.html",
+              "owner-demo.html","reserve.html","staff.html"
+          }
+          actual = {p.name for p in htmls}
+          missing = sorted(expected - actual)
+          if missing:
+              raise SystemExit("Missing HTML pages: " + ", ".join(missing))
+
+          errors = []
+          report = []
+
+          for p in htmls:
+              s = p.read_text(encoding="utf-8")
+              if 'styles.css?v=1013' not in s:
+                  errors.append(f"{p.name}: CSS cache version is not 1013")
+
+              # Find Japanese headings that are unusually long and have no explicit phrase break.
+              heads = re.findall(r'<h([123])[^>]*>(.*?)</h\1>', s, flags=re.S|re.I)
+              risky = []
+              for level, raw in heads:
+                  clean = re.sub(r'<[^>]+>', '', raw)
+                  clean = re.sub(r'\s+', '', clean)
+                  jp_count = len(re.findall(r'[ぁ-んァ-ヶ一-龠々ー「」（）・、。]', clean))
+                  has_break = '<br' in raw.lower() or 'biz-jp-lock-line' in raw
+                  # Longer large headings need an explicit phrase strategy.
+                  if level in ('1','2','3') and jp_count >= 13 and not has_break:
+                      risky.append(clean)
+
+              report.append(f"{p.name}: headings={len(heads)} risky={len(risky)}")
+              # Do not fail small prose headings; fail only known visual BUSINESS zones.
+              if p.name == "index.html":
+                  required = [
+                      'biz-jp-philosophy-title',
+                      'biz-jp-editorial-safe',
+                      'biz-jp-hotel-safe',
+                      'biz-jp-system-safe'
+                  ]
+                  for token in required:
+                      if token not in s:
+                          errors.append(f"index.html: missing {token}")
+              if p.name == "concept.html" and 'biz-jp-editorial-safe' not in s:
+                  errors.append("concept.html: missing editorial safe line control")
+
+          print("\n".join(report))
+          if errors:
+              print("\nERRORS:")
+              print("\n".join(errors))
+              raise SystemExit(1)
+
+          print(f"ALL PAGE JAPANESE WRAP QA PASS: {len(htmls)} HTML files")
+
+      - name: Static regression checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '同じケアはありません。</span>' index.html
+          grep -q '美しいHPの裏側まで、</span>' index.html
+          grep -q '店舗設定とリアルタイム連動。</span>' index.html
+          grep -q 'もっと理解すること。</span>' concept.html
+          grep -q 'BUSINESS V1.0.3 ALL PAGE JAPANESE WRAP QA' styles.css
+          grep -q 'compare-final-cta .btn-secondary' styles.css
+          ! grep -R -E 'styles\.css\?v=(1000|1010|1011|1012|100000)' --include='*.html' .
+          echo "STATIC REGRESSION PASS"
+
+      - name: Commit V1.0.3
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add styles.css *.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'fix: BUSINESS V1.0.3 all-page Japanese wrap QA [BUSINESS-V1.0.3-WRAP-QA]'
+          git push
+
+      - name: Request GitHub Pages rebuild
+        continue-on-error: true
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          code=$(curl -sS -o /tmp/pages-build.json -w '%{http_code}'             -L -X POST             -H "Accept: application/vnd.github+json"             -H "Authorization: Bearer ${GH_TOKEN}"             -H "X-GitHub-Api-Version: 2022-11-28"             "https://api.github.com/repos/${GITHUB_REPOSITORY}/pages/builds")
+          echo "Pages rebuild request HTTP ${code}"
+          cat /tmp/pages-build.json || true
+          exit 0
