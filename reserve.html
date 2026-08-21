@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>予約DEMO | LUMÉA PET SALON</title>
+  <link rel="stylesheet" href="styles.css?v=100000">
+  <style>
+    .live-source{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 18px;padding:11px 13px;border:1px solid #cfdad2;border-radius:14px;background:#f3f7f4;font-size:.84rem;font-weight:800}
+    .live-dot{width:9px;height:9px;border-radius:50%;background:#3c7555;box-shadow:0 0 0 4px rgba(60,117,85,.12)}
+    .hotel-availability{margin-top:16px}
+    .hotel-availability h3{margin:0 0 10px}
+    .hotel-days{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+    .hotel-day{border:1px solid var(--line);border-radius:14px;padding:10px;background:#fff}
+    .hotel-day strong{display:block;font-size:.86rem}
+    .hotel-day span{display:block;margin-top:3px;font-size:.82rem;font-weight:800}
+    .hotel-day.available span{color:var(--ok)}
+    .hotel-day.limited span{color:var(--warn)}
+    .hotel-day.full span,.hotel-day.closed span{color:var(--danger)}
+    .hotel-result{margin-top:12px;padding:13px 14px;border-radius:14px;font-size:.9rem;font-weight:800}
+    .hotel-result.ok{background:#e8f3eb;color:#2e6848}
+    .hotel-result.ng{background:#f7eae8;color:#824944}
+    .hotel-result.loading{background:#f1f2ef;color:var(--muted)}
+    .booking-error{display:none;margin-top:12px;padding:13px 14px;border-radius:14px;background:#f7eae8;color:#824944;font-weight:800}
+    .booking-error.show{display:block}
+    @media(max-width:700px){.hotel-days{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  </style>
+</head>
+<body class="booking-page"><div class="business-booking-note">LUMÉA PET SALON BUSINESS CLASS DEMO / 予約・ホテル空きはDPRO PET SALON本体と連動</div>
+<header class="booking-header">
+  <div class="container">
+    <a class="brand" href="index.html"><span class="brand-mark">P</span><span>LUMÉA PET SALON</span></a>
+    <a class="btn btn-secondary" href="index.html">HPに戻る</a>
+  </div>
+</header>
+
+<main class="booking-wrap">
+<div class="container">
+<div class="booking-shell">
+<section class="booking-main">
+  <div class="live-source"><span class="live-dot"></span><span id="liveSourceText">LUMÉA PET SALON 本体システムに接続中…</span></div><div class="notice" id="repeatNotice" hidden style="margin:0 0 18px">前回の内容を読み込みました（営業DEMO）。</div>
+  <div class="steps" id="steps"></div>
+
+  <div class="step-panel active">
+    <span class="eyebrow">STEP 1</span><h1 style="margin:12px 0 20px">ご予約内容を選択</h1>
+    <div class="choice-grid">
+      <button type="button" class="choice selected" id="serviceTrim"><strong>✂ トリミング</strong><span class="muted">シャンプー・カット・オプション</span></button>
+      <button type="button" class="choice" id="serviceHotel"><strong>☾ ペットホテル</strong><span class="muted">宿泊・滞在中トリミング</span></button>
+    </div>
+    <div class="field" id="storeBox" style="margin-top:18px"><label>店舗</label><select id="storeSelect"></select></div>
+    <h2 style="margin-top:30px">ご予約するペット</h2><div class="choice-grid" id="petChoices"></div>
+    <div id="trimBlock"><h2 style="margin-top:30px">メニュー</h2><div class="choice-grid" id="menuChoices"></div><h3 style="margin-top:24px">オプション</h3><div class="option-list" id="optionList"></div></div>
+    <div id="hotelBlock" hidden><h2 style="margin-top:30px">ホテル利用</h2><p class="notice">宿泊日程は次のステップで選択します。ホテル定員・受付可否はLUMÉA PET SALON本体の店舗設定と申込状況から自動判定します。</p></div>
+  </div>
+
+  <div class="step-panel">
+    <span class="eyebrow">STEP 2</span><h1 id="dateStepTitle" style="margin:12px 0 20px">ご希望の日時を選択</h1>
+    <div id="trimCalendarWrap">
+      <div class="desktop-calendar"><table class="calendar-table"><thead><tr id="calendarHead"></tr></thead><tbody id="calendarBody"></tbody></table></div>
+      <div class="mobile-slots"><div class="date-tabs" id="dateTabs"></div><div class="time-list" id="timeList"></div></div>
+      <p class="notice" style="margin-top:16px">DPRO本体の予約枠に連動しています。○ 予約可能　△ 残りわずか　× 満枠　— 受付終了／定休日。</p>
+    </div>
+
+    <div id="hotelDateWrap" hidden>
+      <div class="form-grid">
+        <div class="field"><label>チェックイン日</label><input type="date" id="checkin"></div>
+        <div class="field"><label>チェックイン時間</label><select id="checkinTime"></select></div>
+        <div class="field"><label>チェックアウト日</label><input type="date" id="checkout"></div>
+        <div class="field"><label>チェックアウト時間</label><select id="checkoutTime"></select></div>
+        <div class="field full"><label class="option-row"><span><input type="checkbox" id="hotelTrim"> 滞在中トリミングを希望する（店舗確認後に確定）</span><strong>希望受付</strong></label></div>
+      </div>
+      <div class="hotel-availability">
+        <h3>ホテル空き状況 <span class="muted" id="hotelCapacityLabel"></span></h3><p class="notice" id="hotelPolicyNote" style="margin:0 0 10px">ホテル営業設定をDPRO本体から取得中です。</p>
+        <div class="hotel-days" id="hotelDays"><div class="hotel-day"><strong>読込中</strong><span>本体へ接続中…</span></div></div>
+        <div class="hotel-result loading" id="hotelStayResult">チェックイン・チェックアウトを選択すると、宿泊期間すべての空きを確認します。</div>
+      </div>
+      <p class="notice">最大預かり頭数・現在の申込頭数・ホテル営業設定をLUMÉA PET SALON本体から取得しています。サロン定休日でも「宿泊継続」「チェックイン」「チェックアウト」を店舗設定どおり個別判定します。</p>
+    </div>
+  </div>
+
+  <div class="step-panel">
+    <span class="eyebrow">STEP 3</span><h1 style="margin:12px 0 20px">お客様情報</h1>
+    <p class="notice">LINE連携済みDEMO：登録情報があるため入力を最小化しています。</p>
+    <div class="form-grid" style="margin-top:18px">
+      <div class="field"><label>お名前</label><input id="customerName" value="デモ太郎"></div>
+      <div class="field"><label>電話番号</label><input id="customerPhone" value="08000002004"></div>
+      <div class="field full"><label>連絡方法</label><input id="customerContact" value="LINE連携済みDEMO"></div>
+      <div id="hotelCustomerExtra" class="field full" hidden>
+        <div class="form-grid">
+          <div class="field full"><label>緊急連絡先</label><input id="emergencyPhone" value="08000002004"></div>
+          <div class="field full"><label class="option-row"><span><input type="checkbox" id="vaccineConfirmed"> ワクチン接種・証明書に関する店舗ルールを確認した</span><strong id="vaccineRequiredLabel">必須</strong></label></div><div class="field full"><label class="option-row"><span><input type="checkbox" id="hotelTerms"> お預かり確認事項に同意する</span><strong>必須</strong></label></div>
+        </div>
+      </div>
+      <div class="field full"><label>備考</label><textarea id="requestNote" placeholder="ご要望・注意事項など"></textarea></div>
+    </div>
+  </div>
+
+  <div class="step-panel">
+    <span class="eyebrow">STEP 4</span><h1 style="margin:12px 0 20px">ご予約内容の確認</h1>
+    <div id="confirmContent"></div>
+    <p class="notice" style="margin-top:16px">「予約を確定する」でLUMÉA PET SALON本体のデモ店舗へ登録します。実店舗への通知ではありません。</p>
+    <div class="booking-error" id="bookingError"></div>
+  </div>
+
+  <div class="step-panel">
+    <div class="complete"><div class="complete-icon">✓</div><span class="eyebrow">COMPLETE</span><h1>受付が完了しました</h1>
+      <p><strong id="completeDate"></strong><br><span id="completePet"></span></p>
+      <p class="notice" id="completeNotice">LUMÉA PET SALON本体のデモ店舗へデータを登録しました。</p>
+      <div class="grid" style="max-width:380px;margin:22px auto 0">
+        <a class="btn btn-line" id="memberDemoLink" href="#">LINE連携・会員証DEMOで確認</a>
+        <a class="btn btn-secondary" href="https://dpromstk2000-lab.github.io/dpro-pet-salon-liff/owner.html?demo=1">実際の店舗管理画面を見る</a>
+        <a class="btn btn-secondary" href="index.html">HPに戻る</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions" id="actions">
+    <button type="button" class="btn btn-secondary" id="prevBtn">戻る</button>
+    <button type="button" class="btn btn-primary" id="nextBtn">次へ</button>
+    <button type="button" class="btn btn-primary" id="confirmBtn" style="display:none">予約を確定する</button>
+  </div>
+</section>
+
+<aside class="booking-summary">
+  <span class="eyebrow">YOUR BOOKING</span><h2>予約内容</h2><div class="summary-list" id="summaryList"></div>
+  <p class="notice" style="margin-top:16px">空き状況はLUMÉA PET SALON本体に連動しています。料金もDPRO本体の公開メニューを優先し、取得失敗時のみDEMOフォールバックを表示します。</p>
+</aside>
+</div>
+</div>
+</main>
+
+<script src="config.js?v=10000"></script>
+<script src="booking-core.js?v=10000"></script>
+<script src="reserve.js?v=10000"></script>
+</body></html>
