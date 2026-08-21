@@ -1,0 +1,144 @@
+name: PET SALON BUSINESS V1.0.1 APPLY
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/pet-salon-business-v101-apply.yml'
+
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  apply:
+    if: "!contains(github.event.head_commit.message, '[BUSINESS-V1.0.1-APPLIED]')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download curated visual assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          dl(){ curl -L --fail --retry 3 --retry-delay 2 -A 'Mozilla/5.0' "$1" -o "$2"; test -s "$2"; }
+          dl 'https://images.pexels.com/photos/23692682/pexels-photo-23692682.jpeg?auto=compress&cs=tinysrgb&w=2200' hero-pet-salon-premium.jpg
+          dl 'https://images.pexels.com/photos/6816854/pexels-photo-6816854.jpeg?auto=compress&cs=tinysrgb&w=1800' hero-02-precision-grooming.jpg
+          dl 'https://images.pexels.com/photos/6816841/pexels-photo-6816841.jpeg?auto=compress&cs=tinysrgb&w=1800' hero-03-relaxation-care.jpg
+          dl 'https://images.pexels.com/photos/6816863/pexels-photo-6816863.jpeg?auto=compress&cs=tinysrgb&w=1400' style-dachshund-calm.jpg
+          dl 'https://images.pexels.com/photos/19145877/pexels-photo-19145877.jpeg?auto=compress&cs=tinysrgb&w=1400' style-toy-poodle-teddy.jpg
+          dl 'https://images.pexels.com/photos/19145886/pexels-photo-19145886.jpeg?auto=compress&cs=tinysrgb&w=1400' style-pomeranian-cute.jpg
+          dl 'https://images.pexels.com/photos/6131572/pexels-photo-6131572.jpeg?auto=compress&cs=tinysrgb&w=1400' style-04-cavapoo.jpg
+          dl 'https://images.pexels.com/photos/6131546/pexels-photo-6131546.jpeg?auto=compress&cs=tinysrgb&w=1400' style-05-shih-tzu.jpg
+          dl 'https://images.pexels.com/photos/23692682/pexels-photo-23692682.jpeg?auto=compress&cs=tinysrgb&w=1400' style-06-schnauzer.jpg
+          dl 'https://images.pexels.com/photos/6131541/pexels-photo-6131541.jpeg?auto=compress&cs=tinysrgb&w=1200' staff-misaki-aizawa.jpg
+          dl 'https://images.pexels.com/photos/6131546/pexels-photo-6131546.jpeg?auto=compress&cs=tinysrgb&w=1200' staff-yuki-nakajima.jpg
+          dl 'https://images.pexels.com/photos/6130983/pexels-photo-6130983.jpeg?auto=compress&cs=tinysrgb&w=1200' staff-miki-naruse.jpg
+
+      - name: Apply V1.0.1 visual polish
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          def read(name): return Path(name).read_text(encoding='utf-8')
+          def write(name, text): Path(name).write_text(text, encoding='utf-8')
+
+          index = read('index.html')
+          replacements = {
+            'https://images.pexels.com/photos/6816844/pexels-photo-6816844.jpeg?auto=compress&cs=tinysrgb&w=2200': 'hero-pet-salon-premium.jpg',
+            'https://images.pexels.com/photos/19145895/pexels-photo-19145895.jpeg?auto=compress&cs=tinysrgb&w=1600': 'hero-02-precision-grooming.jpg',
+            'https://images.unsplash.com/photo-1554692936-82776f9406c5?auto=format&fit=crop&w=1400&q=88': 'hero-03-relaxation-care.jpg',
+            'https://images.pexels.com/photos/19145885/pexels-photo-19145885.jpeg?auto=compress&cs=tinysrgb&w=1000': 'staff-misaki-aizawa.jpg',
+            'https://images.pexels.com/photos/19145897/pexels-photo-19145897.jpeg?auto=compress&cs=tinysrgb&w=1000': 'staff-yuki-nakajima.jpg',
+            'https://images.pexels.com/photos/6131541/pexels-photo-6131541.jpeg?auto=compress&cs=tinysrgb&w=1000': 'staff-miki-naruse.jpg',
+          }
+          for old,new in replacements.items(): index = index.replace(old,new)
+
+          gallery_home = '''<div class="biz-gallery reveal">
+          <figure><img src="style-dachshund-calm.jpg" alt="DACHSHUND CALM"><figcaption>DACHSHUND CALM</figcaption></figure>
+          <figure><img src="style-toy-poodle-teddy.jpg" alt="TOY POODLE TEDDY"><figcaption>TOY POODLE TEDDY</figcaption></figure>
+          <figure><img src="style-pomeranian-cute.jpg" alt="POMERANIAN CUTE"><figcaption>POMERANIAN CUTE</figcaption></figure>
+          <figure><img src="style-04-cavapoo.jpg" alt="CAVAPOO NATURAL"><figcaption>CAVAPOO NATURAL</figcaption></figure>
+          <figure><img src="style-05-shih-tzu.jpg" alt="SHIH TZU ROUND"><figcaption>SHIH TZU ROUND</figcaption></figure>
+          <figure><img src="style-06-schnauzer.jpg" alt="SCHNAUZER SMART"><figcaption>SCHNAUZER SMART</figcaption></figure>
+          </div>'''
+          index, n = re.subn(r'<div class="biz-gallery reveal">.*?</div>(?=<div style="margin-top:28px)', gallery_home, index, count=1, flags=re.S)
+          if n != 1: raise SystemExit('HOME gallery target not found')
+          index = index.replace('styles.css?v=1010','styles.css?v=1011').replace('config.js?v=1010','config.js?v=1011').replace('booking-core.js?v=1010','booking-core.js?v=1011').replace('app.js?v=1010','app.js?v=1011')
+          write('index.html', index)
+
+          gallery = read('gallery.html')
+          gallery_grid = '''<div class="biz-gallery">
+          <figure><img src="style-dachshund-calm.jpg" alt="DACHSHUND CALM"><figcaption>DACHSHUND CALM</figcaption></figure>
+          <figure><img src="style-toy-poodle-teddy.jpg" alt="TOY POODLE TEDDY"><figcaption>TOY POODLE TEDDY</figcaption></figure>
+          <figure><img src="style-pomeranian-cute.jpg" alt="POMERANIAN CUTE"><figcaption>POMERANIAN CUTE</figcaption></figure>
+          <figure><img src="style-04-cavapoo.jpg" alt="CAVAPOO NATURAL"><figcaption>CAVAPOO NATURAL</figcaption></figure>
+          <figure><img src="style-05-shih-tzu.jpg" alt="SHIH TZU ROUND"><figcaption>SHIH TZU ROUND</figcaption></figure>
+          <figure><img src="style-06-schnauzer.jpg" alt="SCHNAUZER SMART"><figcaption>SCHNAUZER SMART</figcaption></figure>
+          </div>'''
+          gallery, n = re.subn(r'<div class="biz-gallery">.*?</div>(?=<p class="muted")', gallery_grid, gallery, count=1, flags=re.S)
+          if n != 1: raise SystemExit('STYLE gallery target not found')
+          gallery = gallery.replace('styles.css?v=1010','styles.css?v=1011').replace('config.js?v=1010','config.js?v=1011').replace('booking-core.js?v=1010','booking-core.js?v=1011').replace('app.js?v=1010','app.js?v=1011')
+          write('gallery.html', gallery)
+
+          staff = read('staff.html')
+          staff = staff.replace('https://images.pexels.com/photos/19145885/pexels-photo-19145885.jpeg?auto=compress&cs=tinysrgb&w=1000','staff-misaki-aizawa.jpg')
+          staff = staff.replace('https://images.pexels.com/photos/19145897/pexels-photo-19145897.jpeg?auto=compress&cs=tinysrgb&w=1000','staff-yuki-nakajima.jpg')
+          staff = staff.replace('https://images.pexels.com/photos/6131541/pexels-photo-6131541.jpeg?auto=compress&cs=tinysrgb&w=1000','staff-miki-naruse.jpg')
+          staff = staff.replace('styles.css?v=1010','styles.css?v=1011').replace('config.js?v=1010','config.js?v=1011').replace('booking-core.js?v=1010','booking-core.js?v=1011').replace('app.js?v=1010','app.js?v=1011')
+          write('staff.html', staff)
+
+          compare = read('compare.html').replace('styles.css?v=1010','styles.css?v=1011').replace('config.js?v=1010','config.js?v=1011').replace('booking-core.js?v=1010','booking-core.js?v=1011').replace('app.js?v=1010','app.js?v=1011')
+          write('compare.html', compare)
+
+          css = read('styles.css')
+          marker = '/* BUSINESS V1.0.1 VISUAL POLISH */'
+          if marker not in css:
+              css += '''\n\n/* BUSINESS V1.0.1 VISUAL POLISH */\n.biz-gallery figure{position:relative;overflow:hidden}\n.biz-gallery figcaption{position:absolute;left:14px;right:14px;bottom:12px;padding:8px 10px;border:1px solid rgba(255,255,255,.28);border-radius:999px;background:rgba(20,18,16,.54);backdrop-filter:blur(8px);color:#fff;font-size:10px;font-weight:800;letter-spacing:.12em;text-align:center}\n.biz-gallery img{filter:saturate(.82) contrast(1.03)}\n.biz-staff img{filter:saturate(.82) contrast(1.025)}\n'''
+          write('styles.css', css)
+
+      - name: QA V1.0.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'hero-pet-salon-premium.jpg' index.html
+          grep -q 'hero-02-precision-grooming.jpg' index.html
+          grep -q 'hero-03-relaxation-care.jpg' index.html
+          grep -q 'style-06-schnauzer.jpg' gallery.html
+          grep -q 'staff-misaki-aizawa.jpg' staff.html
+          grep -q 'DPRO-PET-SALON-HP-DEMO/' compare.html
+          grep -q 'BUSINESS CLASSを開く' compare.html
+          test "$(find . -maxdepth 1 -name '*.jpg' -size +5k | wc -l)" -ge 12
+          echo 'BUSINESS CLASS V1.0.1 QA PASS'
+
+      - name: Commit V1.0.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html gallery.html staff.html compare.html styles.css *.jpg
+          git diff --cached --quiet && exit 0
+          git commit -m 'feat: BUSINESS CLASS V1.0.1 visual compare polish [BUSINESS-V1.0.1-APPLIED]'
+          git push
+
+
+      - name: Request GitHub Pages rebuild
+        continue-on-error: true
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          code=$(curl -sS -o /tmp/pages-build.json -w '%{http_code}' \
+            -L -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/pages/builds")
+          echo "Pages rebuild request HTTP ${code}"
+          cat /tmp/pages-build.json || true
+          exit 0
